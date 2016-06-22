@@ -139,17 +139,16 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        updateWeather();
-    }
-
     private void updateWeather() {
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
         String postCode = pref.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
         FetchWeatherTask task = new FetchWeatherTask(getActivity());
         task.execute(postCode);
+    }
+
+    public void onLocationChanged() {
+        updateWeather();
+        getLoaderManager().restartLoader(FORECAST_LOADER, null, this);
     }
 
     @Override
