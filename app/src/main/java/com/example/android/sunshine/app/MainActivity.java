@@ -28,29 +28,39 @@ import java.util.Arrays;
 
 public class MainActivity extends ActionBarActivity {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
-    private static final String FORECASTFRAGMENT_TAG = "forecast_fragment";
+    private static final String DETAILFRAGMENT_TAG = "DFTAG";
 
     private String location;
+    private boolean twoPane;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         location = Utility.getPreferredLocation(this);
         setContentView(R.layout.activity_main);
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new ForecastFragment(), FORECASTFRAGMENT_TAG)
-                    .commit();
+        if (findViewById(R.id.weather_detail_container) != null) {
+            twoPane = true;
+            if (savedInstanceState == null) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.weather_detail_container, new DetailFragment(), DETAILFRAGMENT_TAG)
+                        .commit();
+            }
+        } else {
+            twoPane = false;
         }
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (location != Utility.getPreferredLocation(this)) {
-            ForecastFragment ff = (ForecastFragment) getSupportFragmentManager().findFragmentByTag(FORECASTFRAGMENT_TAG);
-            ff.onLocationChanged();
-            location = Utility.getPreferredLocation(this);
+        String preferredLocation = Utility.getPreferredLocation(this);
+        if (location != null && !preferredLocation.equals(location)) {
+            ForecastFragment ff = (ForecastFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_forecast);
+            if (null != ff) {
+                ff.onLocationChanged();
+            }
+            location = preferredLocation;
         }
     }
 
@@ -83,8 +93,7 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private void openPreferredLocationMap() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        String postCode = prefs.getString(getString(R.string.pref_location_key), getString(R.string.pref_location_default));
+        String postCode = Utility.getPreferredLocation(this);
 
         Uri geoLocation = Uri.parse("geo:0,0?").buildUpon()
                 .appendQueryParameter("q", postCode)
